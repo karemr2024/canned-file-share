@@ -90,14 +90,14 @@ int main() {
   myTree.setRoot(root);
 
   // Adding files/folders to the root
-  TreeNode *file1 = new TreeNode("File1.txt", 1024, "file", root);
+  TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
   root->addChild(file1);
 
   TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
   root->addChild(folder1);
 
   // Adding a file to folder1
-  TreeNode *file2 = new TreeNode("File2.txt", 2048, "file", folder1);
+  TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
   folder1->addChild(file2);
 
   // Print the tree
