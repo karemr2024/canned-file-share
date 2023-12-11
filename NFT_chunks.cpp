@@ -6,6 +6,11 @@
 #include <fstream>
 using namespace std;
 
+const int chunkSize = 4096;
+class TreeNode;
+long unsigned int divide_chunks(string, TreeNode);
+
+
 // Define a class to represent a node in the tree
 class TreeNode {
 public:
@@ -60,7 +65,8 @@ private:
 
     if (currentNode->fileName == name) {
       return currentNode;
-
+    }
+      
     for (TreeNode *child : currentNode->children) {
       TreeNode *result = searchHelper(child, name);
       if (result != nullptr) {
@@ -123,7 +129,7 @@ public:
 
     TreeNode* folder = this->searchByName(location);
 
-    if(folder == nullptr || folder->filetype != "folder"){
+    if(folder == nullptr || folder->fileType != "folder"){
       std::cout<<"Invalid folder!" << std::endl;
       return false;
     }
@@ -133,14 +139,45 @@ public:
 
     return true;
   }
+
+  bool removeFile(std::string filename){
+    TreeNode* file = this->searchByName(filename);
+    if(file == nullptr){
+      std::cout<<"File does not exist!" <<endl;
+      return false;
+    }
+
+    //Remove file from children of parent
+    //Call removeFileHelper
+
+  }
+
+  //Run DFS to delete all subfolders/subfiles
+  bool removeFileHelper(TreeNode* currentFile){
+    //Check if children.size() is 0
+    //If not, call helper on children
+    //Free malloc'd space
+    //Delete node
+
+    if(currentFile->children.size()!=0){
+      for(int i=0;i<children.size();i++){
+	removeFileHelper(currentFile->children[i]);
+      }
+    }
+
+    //free
+    delete currentFile;
+    
+  }
+  
   // TODO: Implement the following functions
   /*
-  
+  Retrieve file
+  Update?
    */
 };
 
 long unsigned int divide_chunks(string filename, TreeNode myNode) {
-  int chunkSize = 4096;
   int fileSize = myNode.fileSize;
   //char *file = filename;
 
