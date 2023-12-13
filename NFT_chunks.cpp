@@ -160,7 +160,7 @@ public:
     //Delete node
 
     if(currentFile->children.size()!=0){
-      for(int i=0;i<children.size();i++){
+      for(int i=0;i<currentFile->children.size();i++){
 	removeFileHelper(currentFile->children[i]);
       }
     }
