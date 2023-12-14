@@ -45,8 +45,8 @@ public:
   bool removeChild(TreeNode* child){
     for(int i=0;i<this->children.size();i++){
       if(this->children[i]->fileName == child->fileName){
-	this->children.erase(this->children.begin()+i);
-	return true;
+        this->children.erase(this->children.begin()+i);
+        return true;
       }
     }
     return false;
