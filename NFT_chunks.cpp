@@ -23,6 +23,7 @@ public:
   long unsigned int chunk_inds;
   int numChunks;
 
+
   // Constructor
   TreeNode(std::string name, size_t size, std::string type,
            TreeNode *parentNode)
@@ -77,6 +78,7 @@ private:
     return nullptr;
   }
 
+
   void printTreeHelper(TreeNode *node, int level) {
     if (node == nullptr) {
       return;
@@ -122,6 +124,28 @@ public:
     file->parent->removeChild(file);
     destination->addChild(file);
     file->parent = destination;
+  }
+
+    void copyFile(std::string fileName,std::string destinationName){
+    TreeNode* file = this->searchByName(fileName);
+    TreeNode* destination = this->searchByName(destinationName);
+
+    //Check if file and destination folder exist
+    if(file == nullptr){
+      std::cout<<"File does not exist!" << std::endl;
+      return;
+    }
+    else if(destination == nullptr || destination->fileType != "folder"){
+      std::cout<<"Folder does not exist!" << std::endl;
+      return;
+    }
+
+    //Update parent/children relationships
+    //file->parent->removeChild(file);
+    //IMPLEMENT NOW
+    TreeNode* newNode = new TreeNode(file->fileName, file->fileSize, file->fileType, destination);
+    destination->addChild(file);
+    //file->parent = destination;
   }
 
   //Store file in tree by creating new node and calling divide_chunks
