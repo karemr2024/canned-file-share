@@ -157,6 +157,7 @@ public:
   }
 
 
+
   void copyFile(std::string fileName, std::string newFile, std::string destinationName){
     TreeNode* file = this->searchByName(fileName);
     TreeNode* newfile = this->searchByName(newFile);
@@ -288,6 +289,21 @@ public:
 
 
   }
+
+  bool updateFile(std::string filename){
+    TreeNode* file = this->searchByName(filename);
+    if(file == nullptr){
+      std::cout<<"File does not exist!" <<endl;
+      return false;
+    }
+
+    TreeNode* parent= file->parent;
+
+    removeFile(filename);
+    storeFile(filename, parent->fileName);
+
+  }
+
 
   bool getFile(std::string filename){
     TreeNode* file = this->searchByName(filename);
@@ -581,6 +597,8 @@ int main() {
   myTree.deleteFile("sample.txt");
   myTree.getFile("sample3.txt");
   myTree.getFile("sample.txt");
+  myTree.updateFile("sample3.txt");
+  myTree.getFile("sample3.txt");
   myTree.printTree();
   return 0;
 }
