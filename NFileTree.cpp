@@ -426,179 +426,239 @@ void mergeChunks(const std::string& outputFileName, TreeNode* currNode) {
 
 
 
-// int main() {
-//     bool exitProgram = false;
-
-//     FileTree ft;
-
-//     // Creating the root node (typically a folder)
-//     TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
-//     ft.setRoot(root);
-
-//     // Adding files/folders to the root
-//     TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
-//     root->addChild(file1);
-
-//     TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
-//     root->addChild(folder1);
-
-//     TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
-//     root->addChild(folder2);
-
-//     // Adding a file to folder1
-//     TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
-//     folder1->addChild(file2);
-
-//     TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
-//     folder2->addChild(folder3);
-
-//     // Print the tree
-//     ft.printTree();
-
-//     while (!exitProgram) {
-//         std::cout << "Enter your command: ";
-//         std::string userInput;
-//         std::getline(std::cin, userInput);
-
-//         // Use std::istringstream to split the input based on spaces
-//         std::istringstream iss(userInput);
-//         std::vector<std::string> substrings;
-//         std::string token;
-
-//         while (iss >> token) {
-//             substrings.push_back(token);
-//         }
-
-//         int args=substrings.size();
-//         // Output the number of substrings
-//         // std::cout << "Number of substrings: " << substrings.size() << std::endl;
-
-//         if (!substrings.empty()) {
-//             std::string comm= substrings.at(0);
-//                 // Compare argv[1] to a string
-//                 if (substrings.at(0) == "moveFile") {
-//                   if(args<3){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else {
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.moveFile(substrings.at(1), substrings.at(2));
-//                     //ft.printTree();
-//                   }
-//                 } 
-//               else if (substrings.at(0) == "copyFile") {
-//                   if(args<4){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else{
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.copyFile(substrings.at(1), substrings.at(2), substrings.at(3));
-//                   }
-//               } else if (substrings.at(0) == "createFolder") {
-//                   if(args<3){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else{
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.createFolder(substrings.at(1), substrings.at(2));
-//                   }
-//               } else if (substrings.at(0) == "deleteFile") {
-//                   if(args<2){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else{
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.deleteFile(substrings.at(1));
-//                   }
-//               } else if (substrings.at(0) == "storeFile") {
-//                   if(args<3){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else{
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.storeFile(substrings.at(1), substrings.at(2));
-//                   }
-//               } else if (substrings.at(0) == "getFile") {
-//                   if(args<2){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else{
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.getFile(substrings.at(1));
-//                   }
-//               } else if (substrings.at(0) == "printTree") {
-//                   if(args<0){
-//                     std::cout << "Not enough arguments" << std::endl;
-//                   } else{
-//                     std::cout << substrings.at(0) << std::endl;
-//                     ft.printTree();
-//                   };
-//               } else if (substrings.at(0) == "quit") {
-//                   exitProgram = false;
-//                   break;
-//               } else {
-//                   std::cout << "Enter a valid command." << std::endl;
-//               }
-//           } else {
-//               std::cout << "Enter a valid command" << std::endl;
-//           }
-
-//           // for (const auto& substring : substrings) {
-//           //     std::cout << "Substring: " << substring << std::endl;
-//           // }
-
-//         }
-
-
-//     return 0;
-//   }
-
-
-
 int main() {
-  // Example usage
-  FileTree myTree;
+    bool exitProgram = false;
 
-  // Creating the root node (typically a folder)
-  TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
-  myTree.setRoot(root);
 
-  // Adding files/folders to the root
-  TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
-  root->addChild(file1);
+    FileTree ft;
+    ifstream testfile;
 
-  TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
-  root->addChild(folder1);
+    testfile.open("test.txt");
+    if(!testfile){
+      cout << "No testfile detected with name test.txt " <<endl;
+      return -1;
+      while (!exitProgram) {
+          std::cout << "Enter your command: ";
+          std::string userInput;
+          std::getline(std::cin, userInput);
 
-  TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
-  root->addChild(folder2);
+          // Use std::istringstream to split the input based on spaces
+          std::istringstream iss(userInput);
+          std::vector<std::string> substrings;
+          std::string token;
 
-  // Adding a file to folder1
-  TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
-  folder1->addChild(file2);
+          while (iss >> token) {
+              substrings.push_back(token);
+          }
 
-  TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
-  folder2->addChild(folder3);
+          int args=substrings.size();
+          // Output the number of substrings
+          // std::cout << "Number of substrings: " << substrings.size() << std::endl;
 
-  // Print the tree
-  myTree.printTree();
+          if (!substrings.empty()) {
+              std::string comm= substrings.at(0);
+                  // Compare argv[1] to a string
+                  if (substrings.at(0) == "moveFile") {
+                    if(args<3){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else {
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.moveFile(substrings.at(1), substrings.at(2));
+                      //ft.printTree();
+                    }
+                  } 
+                else if (substrings.at(0) == "copyFile") {
+                    if(args<4){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.copyFile(substrings.at(1), substrings.at(2), substrings.at(3));
+                    }
+                } else if (substrings.at(0) == "createFolder") {
+                    if(args<3){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.createFolder(substrings.at(1), substrings.at(2));
+                    }
+                } else if (substrings.at(0) == "deleteFile") {
+                    if(args<2){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.deleteFile(substrings.at(1));
+                    }
+                } else if (substrings.at(0) == "storeFile") {
+                    if(args<3){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.storeFile(substrings.at(1), substrings.at(2));
+                    }
+                } else if (substrings.at(0) == "getFile") {
+                    if(args<2){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.getFile(substrings.at(1));
+                    }
+                } else if (substrings.at(0) == "printTree") {
+                    if(args<0){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.printTree();
+                    };
+                } else if (substrings.at(0) == "quit") {
+                    exitProgram = false;
+                    break;
+                } else {
+                    std::cout << "Enter a valid command." << std::endl;
+                }
+            } else {
+                std::cout << "Enter a valid command" << std::endl;
+            }
 
-  //long unsigned int test;
+            // for (const auto& substring : substrings) {
+            //     std::cout << "Substring: " << substring << std::endl;
+            // }
 
-  //  test = divide_chunks("test.txt",*file1);
+          }
+    // for every line in test file run the command.
+    } else {
+      std::string line;
+      while(std::getline(testfile, line)){
+        std::istringstream iss(line);
+        std::vector<std::string> substrings;
+        std::string token;
 
-  // myTree.moveFile("File1.txt","Folder3");
-  // myTree.copyFile("File1.txt", "File4.txt", "Folder1");
-  myTree.createFolder("Folder4", "Folder3");
-  myTree.storeFile("sample.txt", "Folder4");
-  myTree.storeFile("sample3.txt", "Folder4");
-  myTree.storeFile("sample2.txt", "Folder3");
-  myTree.printTree();
-  //myTree.getFile("sample.txt");
-  myTree.getFile("sample2.txt");
-  
-  // myTree.createFolder("Folder4", "Folder3");
-  // myTree.storeFile("file3.txt", "Folder4");
-  // myTree.removeFile("Folder3");
-  myTree.deleteFile("sample.txt");
-  myTree.getFile("sample3.txt");
-  myTree.getFile("sample.txt");
-  myTree.updateFile("sample3.txt");
-  myTree.getFile("sample3.txt");
-  myTree.printTree();
+        while (iss >> token) {
+            substrings.push_back(token);
+        }
+
+        int args=substrings.size();
+        // Output the number of substrings
+        // std::cout << "Number of substrings: " << substrings.size() << std::endl;
+
+        if (!substrings.empty()) {
+            std::string comm= substrings.at(0);
+                // Compare argv[1] to a string
+                if (substrings.at(0) == "moveFile") {
+                  if(args<3){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else {
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.moveFile(substrings.at(1), substrings.at(2));
+                    //ft.printTree();
+                  }
+                } 
+              else if (substrings.at(0) == "copyFile") {
+                  if(args<4){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.copyFile(substrings.at(1), substrings.at(2), substrings.at(3));
+                  }
+              } else if (substrings.at(0) == "createFolder") {
+                  if(args<3){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.createFolder(substrings.at(1), substrings.at(2));
+                  }
+              } else if (substrings.at(0) == "deleteFile") {
+                  if(args<2){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.deleteFile(substrings.at(1));
+                  }
+              } else if (substrings.at(0) == "storeFile") {
+                    if(args<3){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.storeFile(substrings.at(1), substrings.at(2));
+                    }
+                } else if (substrings.at(0) == "getFile") {
+                    if(args<2){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.getFile(substrings.at(1));
+                    }
+                } else if (substrings.at(0) == "printTree") {
+                    if(args<0){
+                      std::cout << "Not enough arguments" << std::endl;
+                    } else{
+                      std::cout << substrings.at(0) << std::endl;
+                      ft.printTree();
+                    };
+                } else if (substrings.at(0) == "quit") {
+                    exitProgram = false;
+                    break;
+                } else {
+                    std::cout << "Enter a valid command." << std::endl;
+                }
+            } else {
+                std::cout << "Enter a valid command" << std::endl;
+            }
+      }
+  }
   return 0;
 }
+
+
+// int main() {
+//   // Example usage
+//   FileTree myTree;
+
+//   // Creating the root node (typically a folder)
+//   TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
+//   myTree.setRoot(root);
+
+//   // Adding files/folders to the root
+//   TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
+//   root->addChild(file1);
+
+//   TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
+//   root->addChild(folder1);
+
+//   TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
+//   root->addChild(folder2);
+
+//   // Adding a file to folder1
+//   TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
+//   folder1->addChild(file2);
+
+//   TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
+//   folder2->addChild(folder3);
+
+//   // Print the tree
+//   myTree.printTree();
+
+//   //long unsigned int test;
+
+//   //  test = divide_chunks("test.txt",*file1);
+
+//   // myTree.moveFile("File1.txt","Folder3");
+//   // myTree.copyFile("File1.txt", "File4.txt", "Folder1");
+//   myTree.createFolder("Folder4", "Folder3");
+//   myTree.storeFile("sample.txt", "Folder4");
+//   myTree.storeFile("sample3.txt", "Folder4");
+//   myTree.storeFile("sample2.txt", "Folder3");
+//   myTree.printTree();
+//   //myTree.getFile("sample.txt");
+//   myTree.getFile("sample2.txt");
+  
+//   // myTree.createFolder("Folder4", "Folder3");
+//   // myTree.storeFile("file3.txt", "Folder4");
+//   // myTree.removeFile("Folder3");
+//   myTree.deleteFile("sample.txt");
+//   myTree.getFile("sample3.txt");
+//   myTree.getFile("sample.txt");
+//   myTree.updateFile("sample3.txt");
+//   myTree.getFile("sample3.txt");
+//   myTree.printTree();
+//   return 0;
+// }

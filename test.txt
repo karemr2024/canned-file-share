@@ -1,0 +1,11 @@
+createFolder Folder1 root
+createFolder Folder2 Folder1
+storeFile stored.txt Folder2
+copyFile stored.txt storedCopy.txt Folder1
+printTree
+createFolder Folder3 Folder2
+moveFile storedCopy.txt Folder3
+printTree
+deleteFile sroredCopy.txt
+printTree 
+quit
