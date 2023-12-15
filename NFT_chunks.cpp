@@ -1,17 +1,25 @@
 #include <iostream>
 #include <fstream>
 #include <vector>
+#include "NFileTree.cpp"
 using namespace std;
 
-void splitFile(const std::string& inputFileName, const std::string& outputPrefix, size_t chunkSize) {
+// size_t chunkSize = 4096;
+
+
+
+void splitFile(const std::string& inputFileName, TreeNode* currNode) {
     std::ifstream inputFile(inputFileName, std::ios::binary);
+
+    
 
     if (!inputFile) {
         std::cerr << "Error opening input file: " << inputFileName << std::endl;
         return;
     }
 
-    size_t fileCounter = 1;
+    size_t chunkCounter = gchunkcount;
+    currNode->chunk_inds=gchunkcount;
     char buffer[chunkSize];
 
     while (!inputFile.eof()) {
@@ -20,19 +28,22 @@ void splitFile(const std::string& inputFileName, const std::string& outputPrefix
         std::streamsize bytesRead = inputFile.gcount();
 
         if (bytesRead > 0) {
-            std::string outputFileName = "./store/" + outputPrefix + std::to_string(fileCounter++);
+            std::string outputFileName = "./store/" + storePrefix + std::to_string(chunkCounter++);
             std::ofstream outputFile(outputFileName, std::ios::binary);
             outputFile.write(buffer, bytesRead);
         }
     }
 
-    std::cout<<"fileCounter: " << fileCounter << std::endl;
+    currNode->numChunks=chunkCounter;
+    gchunkcount=chunkCounter+1;
+    std::cout<<"chunkCounter: " << chunkCounter << std::endl;
+    std::cout<<"gchunkcount: " << gchunkcount << std::endl;
 
     inputFile.close();
 }
 
 
-void mergeChunks(const std::string& inputPrefix, const std::string& outputFileName) {
+void mergeChunks(const std::string& outputFileName, TreeNode* currNode) {
     std::ofstream outputFile(outputFileName, std::ios::binary);
 
     if (!outputFile) {
@@ -44,7 +55,7 @@ void mergeChunks(const std::string& inputPrefix, const std::string& outputFileNa
     std::string inputFileName;
 
     do {
-        inputFileName = "./store/" + inputPrefix + std::to_string(chunkCounter++);
+        inputFileName = "./store/" + storePrefix + std::to_string(chunkCounter++);
         std::ifstream inputFile(inputFileName, std::ios::binary);
 
         if (!inputFile) {
@@ -60,17 +71,14 @@ void mergeChunks(const std::string& inputPrefix, const std::string& outputFileNa
 }
 
 
-int main() {
-    std::string inputFileName = "sample.txt";
-    std::string outputPrefix = "chunk_";
-    size_t chunkSize = 4096; // Set your desired chunk size
+// int main() {
+//     std::string inputFileName = "sample.txt"; 
 
-    splitFile(inputFileName, outputPrefix, chunkSize);
+//     // splitFile(inputFileName);
 
-    std::string inputPrefix = "chunk_";
-    std::string outputFileName = "reconstructed_file.txt";
+//     std::string outputFileName = "reconstructed_file.txt";
 
-    mergeChunks(inputPrefix, outputFileName);
+//     // mergeChunks(outputFileName);
 
-    return 0;
-}
+//     return 0;
+// }
