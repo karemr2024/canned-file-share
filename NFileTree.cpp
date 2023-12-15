@@ -243,8 +243,6 @@ public:
     
     TreeNode* file = new TreeNode(filename, fileExtension, folder);
     folder->addChild(file);
-    //divide_chunks(filename, *file);
-    //std::cout<<"INSIDE1" <<endl;
     splitFile(filename, file);
     const char* cstr_filename = filename.c_str();
     //std::remove(cstr_filename);
@@ -311,19 +309,13 @@ public:
         return false;
       }
 
-      //Remove file from children of parent
       removeFileHelper(file);
-      //Call removeFileHelper
 
     }
 
 
   //Run DFS to delete all subfolders/subfiles
   bool removeFileHelper(TreeNode* currentFile){
-    //Check if children.size() is 0
-    //If not, call helper on children
-    //Free malloc'd space
-    //Delete node
 
     if(currentFile->children.size()!=0){
       for(int i=0;i<currentFile->children.size();i++){
@@ -347,7 +339,6 @@ public:
     }
 
     size_t chunkCounter = gchunkcount;
-    //std::cout<<"INSIDE" <<endl;
     currNode->chunk_inds=gchunkcount;
     char buffer[chunkSize];
 
@@ -414,11 +405,6 @@ void mergeChunks(const std::string& outputFileName, TreeNode* currNode) {
     outputFile.close();
 }
   
-  // TODO: Implement the following functions
-  /*
-  Retrieve file
-  Update?
-   */
 };
 
 
