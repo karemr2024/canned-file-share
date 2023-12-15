@@ -7,7 +7,6 @@
 #include <fstream>
 #include <cstring>
 #include <cctype>
-// #include "NFT_chunks.cpp"
 using namespace std;
 
 const int chunkSize = 4096;
@@ -15,6 +14,7 @@ class TreeNode;
 long unsigned int divide_chunks(string, TreeNode);
 size_t gchunkcount=0;
 std::string storePrefix = "chunk_";
+std::unordered_map<int, int> chunkHashMap;
 
 
 // Define a class to represent a node in the tree
@@ -98,10 +98,11 @@ private:
       return;
     }
 
-    for (TreeNode* child : node->children) {
+    for (TreeNode* child : node->children) { 
         deleteNode(child); // Recursively delete children
 
     }
+    node->parent->removeChild(node);
     delete node;
 
   }
@@ -177,7 +178,12 @@ public:
     }
 
     TreeNode* newNode = new TreeNode(newFile, file->fileType, destination);
+    newNode->chunk_inds=file->chunk_inds;
+    newNode->numChunks=file->numChunks;
     destination->addChild(newNode);
+    for(int i=file->chunk_inds; i<file->numChunks; i++){
+      chunkHashMap[i]++;
+    }
   }
 
   bool createFolder(std::string filename, std::string location){
@@ -226,10 +232,10 @@ public:
     // If there is at least one dot in the file name, the last element in the vector
     // will contain the file extension (e.g., "txt")
     if (substrings.size() > 1) {
-        std::string fileExtension = substrings.back();
+        fileExtension = substrings.back();
         std::cout << "File extension: " << fileExtension << std::endl;
     } else {
-        std::string fileExtension = "txt";
+        fileExtension = "txt";
         std::cout << "No file extension found." << std::endl;
     }
 
@@ -240,9 +246,14 @@ public:
     //divide_chunks(filename, *file);
     //std::cout<<"INSIDE1" <<endl;
     splitFile(filename, file);
+    const char* cstr_filename = filename.c_str();
+    //std::remove(cstr_filename);
 
-    std::cout << "file num chunks : " << file->numChunks << std::endl;
-    std::cout << "file chunk start : " << file->chunk_inds << std::endl;
+
+    // std::cout << "file->TYPE : " << file->fileType << std::endl;
+    // std::cout << "file->fileExtension : " << fileExtension << std::endl;
+    // std::cout << "file num chunks : " << file->numChunks << std::endl;
+    // std::cout << "file chunk start : " << file->chunk_inds << std::endl;
 
 
     return true;
@@ -253,6 +264,25 @@ public:
     if(file == nullptr){
       std::cout<<"File does not exist!" <<endl;
       return false;
+    }
+
+    size_t chunk_start=file->chunk_inds;
+    // std::cout << "chunk_start: " << chunk_start <<endl;
+    size_t chunk_end=file->numChunks;
+    // std::cout << "chunk_end: " << chunk_end <<endl;
+
+    for(int i=chunk_start; i<chunk_end; i++){
+      std::string deleteFileName = "./store/" + storePrefix + std::to_string(i);
+      const char* cstr_filename = deleteFileName.c_str();
+      if(chunkHashMap[i]==1){
+        if (std::remove(cstr_filename) != 0) {
+            std::perror("Error deleting chunks\n");
+        } else {
+            std::cout << "chunks deleted successfully" <<endl;
+        }
+      } else {
+        chunkHashMap[i]--;
+      }
     }
 
     deleteNode(file);
@@ -267,8 +297,8 @@ public:
       std::cout<<"File does not exist!" <<endl;
       return false;
     }
-
-    mergeChunks("reconstructed_file.txt", file);
+    std::string outputFileName = filename + "_fetched";
+    mergeChunks(outputFileName, file);
 
 
 
@@ -327,6 +357,7 @@ public:
         std::streamsize bytesRead = inputFile.gcount();
 
         if (bytesRead > 0) {
+            chunkHashMap[chunkCounter]=1;
             std::string outputFileName = "./store/" + storePrefix + std::to_string(chunkCounter++);
             std::ofstream outputFile(outputFileName, std::ios::binary);
             outputFile.write(buffer, bytesRead);
@@ -552,12 +583,18 @@ int main() {
   // myTree.copyFile("File1.txt", "File4.txt", "Folder1");
   myTree.createFolder("Folder4", "Folder3");
   myTree.storeFile("sample.txt", "Folder4");
+  myTree.storeFile("sample3.txt", "Folder4");
+  myTree.storeFile("sample2.txt", "Folder3");
   myTree.printTree();
-  myTree.getFile("sample.txt");
+  //myTree.getFile("sample.txt");
+  myTree.getFile("sample2.txt");
+  
   // myTree.createFolder("Folder4", "Folder3");
   // myTree.storeFile("file3.txt", "Folder4");
   // myTree.removeFile("Folder3");
-  // myTree.deleteFile("Folder3");
-  // myTree.printTree();
+  myTree.deleteFile("sample.txt");
+  myTree.getFile("sample3.txt");
+  myTree.getFile("sample.txt");
+  myTree.printTree();
   return 0;
 }
