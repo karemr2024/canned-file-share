@@ -7,6 +7,7 @@
 #include <fstream>
 #include <cstring>
 #include <cctype>
+#include <unordered_map>
 using namespace std;
 
 const int chunkSize = 4096;
@@ -37,6 +38,29 @@ public:
     timestampCreated = std::time(nullptr); // Set the current time as timestamp
   }
 
+  //Constructor for reading tree from .data (use for fileType other than folders)
+  TreeNode(std::string name, time_t time, size_t size, std::string type,
+	   TreeNode* parentNode, long unsigned int inds, int numberChunks){
+    this->fileName = name;
+    this->timestampCreated = time;
+    this->fileSize = size;
+    this->fileType = type;
+    this->parent = parentNode;
+    this->chunk_inds = inds;
+    this->numChunks = numberChunks;
+  }
+
+  //Constructor for reading ree from .data (used for fileType:"folder")
+  TreeNode(std::string name, time_t time, size_t size, std::string type,
+	   TreeNode* parentNode, int numberChunks){
+    this->fileName = name;
+    this->timestampCreated = time;
+    this->fileSize = size;
+    this->fileType = type;
+    this->parent = parentNode;
+    this->numChunks = numberChunks;
+  }
+  
   //Folder Constructor
   TreeNode(std::string name, std::string type,
 	   TreeNode* parentNode)
@@ -65,6 +89,23 @@ public:
       }
     }
     return false;
+  }
+
+  void serializeNode(std::ofstream& file){
+    file << this->fileName << '\n';
+    file << this->timestampCreated << '\n';
+    file << this->fileSize << '\n';
+    file << this->fileType << '\n';
+
+    if(this->parent == nullptr){
+      file << '\n';
+    }
+    else{
+      file << this->parent->fileName << '\n';
+    }
+
+    file << this->chunk_inds << '\n';
+    file << this->numChunks << '\n';
   }
 
 };
@@ -277,6 +318,7 @@ public:
         if (std::remove(cstr_filename) != 0) {
             std::perror("Error deleting chunks\n");
         } else {
+	  chunkHashMap[i]--;
             std::cout << "chunks deleted successfully" <<endl;
         }
       } else {
@@ -345,7 +387,46 @@ public:
 
     //free
     delete currentFile;
-    
+    return true;
+  }
+
+  //Writes each file node's data to a file (whose name is provided in argument .data)
+  void writeTreeFile(std::string treeName){
+    std::string fileName = treeName + ".data";
+    std::ofstream outFile(fileName);
+    if(!outFile.is_open()){
+      std::cout<<"Unable to open file" << std::endl;
+      return;
+    }
+
+    //Store gchunkcount
+    outFile << gchunkcount << '\n';
+
+    //Store chunkHashMap
+    for(const auto& pair : chunkHashMap){
+      outFile << pair.first << '\n';
+      outFile << pair.second << '\n';
+    }
+
+    //Don't need to store the root node
+    for(int i=0;i<this->root->children.size();i++){
+      this->writeTreeHelper(outFile,this->root->children[i]);
+    }
+
+    outFile.close();
+
+  }
+
+  void writeTreeHelper(std::ofstream& file,TreeNode* currentNode){
+    if(currentNode == nullptr){
+      return;
+    }
+
+    currentNode->serializeNode(file);
+
+    for(int i=0;i<currentNode->children.size();i++){
+      this->writeTreeHelper(file,currentNode->children[i]);
+    }
   }
 
   void splitFile(const std::string& inputFileName, TreeNode* currNode) {
@@ -376,7 +457,7 @@ public:
     }
 
     currNode->numChunks=chunkCounter;
-    gchunkcount=chunkCounter+1;
+    gchunkcount=chunkCounter;
     //std::cout<<"chunkCounter: " << chunkCounter << std::endl;
     //std::cout<<"gchunkcount: " << gchunkcount << std::endl;
 
@@ -427,6 +508,107 @@ void mergeChunks(const std::string& outputFileName, TreeNode* currNode) {
   
 };
 
+FileTree readTreeFile(std::string fileName){
+  
+  FileTree ft;
+  TreeNode* root = new TreeNode("RootFolder",0,"folder",nullptr);
+  ft.setRoot(root);
+  
+  std::ifstream file(fileName);
+  if(!file.is_open()){
+    std::cout<<"Unable to open file" << std::endl;
+    return ft;
+  }
+
+  
+  int mapLineCounter = 0;
+  int nodeLineCounter = 0;
+  int key;
+  int value;
+  std::string name;
+  std::time_t time;
+  size_t size;
+  std::string type;
+  std::string parentName;
+  long unsigned int inds;
+  int numberChunks;
+  
+  std::string line;
+
+  if(std::getline(file,line)){
+    gchunkcount = stoi(line);
+  }
+  else{
+    std::cout<<"File is empty \n";
+    return ft;
+  }
+
+  //Read lines 1 through 2*gchunkcount+1 to populate chunkHashMap
+  while(mapLineCounter<gchunkcount*2 && std::getline(file,line)){
+    switch(mapLineCounter%2)
+      {
+      case 0: //map key
+	key = stoi(line);
+	break;
+      case 1: //map value
+	value = stoi(line);
+
+	//When we read the value of the key/value pair, insert pair to map
+	chunkHashMap[key] = value;
+	break;
+      }
+    mapLineCounter++;
+  }
+
+  //Read rest of lines to populate tree with nodes
+  while (std::getline(file,line)){
+    
+    switch(nodeLineCounter%7)
+      {
+      case 0: //name
+	name = line;
+	break;
+      case 1: //time
+	time = (time_t)stoll(line);
+	break;
+      case 2: //size
+	size = std::stoul(line);
+	break;
+      case 3: //type
+	type = line;
+	break;
+      case 4: //parentName
+	parentName = line;
+	break;
+      case 5: //inds, folders have no chunk indicies
+	if(type != "folder"){
+	  inds = stoul(line);
+	}
+	break;
+      case 6: //numberChunks, once we read 7 lines, we create a node
+	numberChunks = stoi(line);
+
+	//Create a node
+	TreeNode* parentNode = ft.searchByName(parentName);
+	if(type != "folder"){
+	  TreeNode* currentNode = new TreeNode(name,time,size,type,parentNode,inds,numberChunks);
+	  parentNode->addChild(currentNode);
+	}
+	else{
+	  TreeNode* currentNode = new TreeNode(name,time,size,type,parentNode,numberChunks);
+	  parentNode->addChild(currentNode);
+	}
+	break;
+      }
+    
+    //std::cout << "|" <<line << "|" << '\n';
+    nodeLineCounter++;
+  }
+
+  file.close();
+
+  return ft;
+}
 
 
 
@@ -438,9 +620,6 @@ int main() {
     // Creating the root node (typically a folder)
     TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
     ft.setRoot(root);
-
-    // Print the tree
-    ft.printTree();
 
     while (!exitProgram) {
         std::cout << "Enter your command: \n";
@@ -524,7 +703,6 @@ int main() {
               std::cout << "Enter a valid command" << std::endl;
           }
         }
-
 
     return 0;
   }
