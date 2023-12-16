@@ -376,7 +376,7 @@ public:
     }
 
     currNode->numChunks=chunkCounter;
-    gchunkcount=chunkCounter+1;
+    gchunkcount=chunkCounter;
     //std::cout<<"chunkCounter: " << chunkCounter << std::endl;
     //std::cout<<"gchunkcount: " << gchunkcount << std::endl;
 
