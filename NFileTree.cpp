@@ -12,6 +12,9 @@ using namespace std;
 const int chunkSize = 4096;
 class TreeNode;
 long unsigned int divide_chunks(string, TreeNode);
+size_t gchunkcount=0;
+std::string storePrefix = "chunk_";
+std::unordered_map<int, int> chunkHashMap;
 
 
 // Define a class to represent a node in the tree
@@ -115,11 +118,11 @@ private:
     if (currentNode == nullptr) {
       return nullptr;
     }
-
+    //std::cout<<"Inside1" << std::endl;
     if (currentNode->fileName == name) {
       return currentNode;
     }
-      
+    //std::cout<<"Inside2" << std::endl;  
     for (TreeNode *child : currentNode->children) {
       TreeNode *result = searchHelper(child, name);
       if (result != nullptr) {
@@ -135,10 +138,11 @@ private:
       return;
     }
 
-    for (TreeNode* child : node->children) {
+    for (TreeNode* child : node->children) { 
         deleteNode(child); // Recursively delete children
 
     }
+    node->parent->removeChild(node);
     delete node;
 
   }
@@ -193,6 +197,7 @@ public:
   }
 
 
+
   void copyFile(std::string fileName, std::string newFile, std::string destinationName){
     TreeNode* file = this->searchByName(fileName);
     TreeNode* newfile = this->searchByName(newFile);
@@ -214,7 +219,12 @@ public:
     }
 
     TreeNode* newNode = new TreeNode(newFile, file->fileType, destination);
+    newNode->chunk_inds=file->chunk_inds;
+    newNode->numChunks=file->numChunks;
     destination->addChild(newNode);
+    for(int i=file->chunk_inds; i<file->numChunks; i++){
+      chunkHashMap[i]++;
+    }
   }
 
   bool createFolder(std::string filename, std::string location){
@@ -243,7 +253,7 @@ public:
 
     TreeNode* efile = this->searchByName(filename);
 
-    if(efile == nullptr){
+    if(efile != nullptr){
       std::cout<<"Folder or file with name already exist!" << std::endl;
       return false;
     }
@@ -263,18 +273,27 @@ public:
     // If there is at least one dot in the file name, the last element in the vector
     // will contain the file extension (e.g., "txt")
     if (substrings.size() > 1) {
-        std::string fileExtension = substrings.back();
+        fileExtension = substrings.back();
         //std::cout << "File extension: " << fileExtension << std::endl;
     } else {
-        std::string fileExtension = "txt";
-        //std::cout << "No file extension found." << std::endl;
+        fileExtension = "txt";
+        std::cout << "No file extension found." << std::endl;
     }
 
 
     
-    TreeNode* file = new TreeNode(filename,fileExtension,folder);
+    TreeNode* file = new TreeNode(filename, fileExtension, folder);
     folder->addChild(file);
-    //divide_chunks(filename, *file);
+    splitFile(filename, file);
+    const char* cstr_filename = filename.c_str();
+    //std::remove(cstr_filename);
+
+
+    // std::cout << "file->TYPE : " << file->fileType << std::endl;
+    // std::cout << "file->fileExtension : " << fileExtension << std::endl;
+    // std::cout << "file num chunks : " << file->numChunks << std::endl;
+    // std::cout << "file chunk start : " << file->chunk_inds << std::endl;
+
 
     return true;
   }
@@ -286,21 +305,60 @@ public:
       return false;
     }
 
+    size_t chunk_start=file->chunk_inds;
+    // std::cout << "chunk_start: " << chunk_start <<endl;
+    size_t chunk_end=file->numChunks;
+    // std::cout << "chunk_end: " << chunk_end <<endl;
+
+    for(int i=chunk_start; i<chunk_end; i++){
+      std::string deleteFileName = "./store/" + storePrefix + std::to_string(i);
+      const char* cstr_filename = deleteFileName.c_str();
+      if(chunkHashMap[i]==1){
+        if (std::remove(cstr_filename) != 0) {
+            std::perror("Error deleting chunks\n");
+        } else {
+            std::cout << "chunks deleted successfully" <<endl;
+        }
+      } else {
+        chunkHashMap[i]--;
+      }
+    }
+
     deleteNode(file);
     return true;
 
 
   }
 
-  bool getFile(std::string filename){
+  bool updateFile(std::string filename){
     TreeNode* file = this->searchByName(filename);
     if(file == nullptr){
       std::cout<<"File does not exist!" <<endl;
       return false;
     }
 
-    //removeFileHelper(file);
-    delete file;
+    TreeNode* parent= file->parent;
+
+    removeFile(filename);
+    std::string parent_name= parent->fileName;
+    std::cout<< "parent_name: " << parent_name <<endl;
+    storeFile(filename, parent_name);
+
+  }
+
+
+  bool getFile(std::string filename){
+    //std::cout<<"Inside" <<endl;
+    TreeNode* file = this->searchByName(filename);
+    //std::cout<<"Inside" <<endl;
+    if(file == nullptr){
+      std::cout<<"File does not exist!" <<endl;
+      return false;
+    }
+    std::string outputFileName = filename + "_fetched";
+    mergeChunks(outputFileName, file);
+
+
 
   }
 
@@ -311,19 +369,13 @@ public:
         return false;
       }
 
-      //Remove file from children of parent
       removeFileHelper(file);
-      //Call removeFileHelper
 
     }
 
 
   //Run DFS to delete all subfolders/subfiles
   bool removeFileHelper(TreeNode* currentFile){
-    //Check if children.size() is 0
-    //If not, call helper on children
-    //Free malloc'd space
-    //Delete node
 
     if(currentFile->children.size()!=0){
       for(int i=0;i<currentFile->children.size();i++){
@@ -365,12 +417,84 @@ public:
       this->writeTreeHelper(file,currentNode->children[i]);
     }
   }
+
+  void splitFile(const std::string& inputFileName, TreeNode* currNode) {
+    std::ifstream inputFile(inputFileName, std::ios::binary);
+
+    
+
+    if (!inputFile) {
+        std::cerr << "Error opening input file: " << inputFileName << std::endl;
+        return;
+    }
+
+    size_t chunkCounter = gchunkcount;
+    currNode->chunk_inds=gchunkcount;
+    char buffer[chunkSize];
+
+    while (!inputFile.eof()) {
+        inputFile.read(buffer, chunkSize);
+
+        std::streamsize bytesRead = inputFile.gcount();
+
+        if (bytesRead > 0) {
+            chunkHashMap[chunkCounter]=1;
+            std::string outputFileName = "./store/" + storePrefix + std::to_string(chunkCounter++);
+            std::ofstream outputFile(outputFileName, std::ios::binary);
+            outputFile.write(buffer, bytesRead);
+        }
+    }
+
+    currNode->numChunks=chunkCounter;
+    gchunkcount=chunkCounter+1;
+    //std::cout<<"chunkCounter: " << chunkCounter << std::endl;
+    //std::cout<<"gchunkcount: " << gchunkcount << std::endl;
+
+    inputFile.close();
+}
+
+
+void mergeChunks(const std::string& outputFileName, TreeNode* currNode) {
+    std::ofstream outputFile(outputFileName, std::ios::binary);
+
+    if (!outputFile) {
+        std::cerr << "Error opening output file: " << outputFileName << std::endl;
+        return;
+    }
+
+    size_t chunkCounter = currNode->chunk_inds;
+    size_t chunk_end = currNode->numChunks;
+    std::string inputFileName;
+
+    for(int i=chunkCounter; i<=chunk_end; i++){
+      inputFileName = "./store/" + storePrefix + std::to_string(i);
+        std::ifstream inputFile(inputFileName, std::ios::binary);
+
+        if (!inputFile) {
+            break;  // No more chunks to read
+        }
+
+        outputFile << inputFile.rdbuf();
+
+        inputFile.close();
+    }
+
+    // do {
+    //     inputFileName = "./store/" + storePrefix + std::to_string(chunkCounter++);
+    //     std::ifstream inputFile(inputFileName, std::ios::binary);
+
+    //     if (!inputFile) {
+    //         break;  // No more chunks to read
+    //     }
+
+    //     outputFile << inputFile.rdbuf();
+
+    //     inputFile.close();
+    // } while (true);
+
+    outputFile.close();
+}
   
-  // TODO: Implement the following functions
-  /*
-  Retrieve file
-  Update?
-   */
 };
 
 FileTree readTreeFile(std::string fileName){
@@ -444,129 +568,8 @@ FileTree readTreeFile(std::string fileName){
   return ft;
 }
 
+
+
 int main() {
-    bool exitProgram = false;
-
-    FileTree ft;
-
-    // Creating the root node (typically a folder)
-    TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
-    ft.setRoot(root);
-
-    // Adding files/folders to the root
-    TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
-    root->addChild(file1);
-
-    TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
-    root->addChild(folder1);
-
-    TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
-    root->addChild(folder2);
-
-    // Adding a file to folder1
-    TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
-    folder1->addChild(file2);
-
-    TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", folder2);
-    folder2->addChild(folder3);
-
-    // Print the tree
-    ft.printTree();
-
-    ft.writeTreeFile("Test");
-
-    std::cout<<"Persistent Tree:\n";
-    FileTree new_ft = readTreeFile("Test.data");
-    new_ft.printTree();
-    /*
-    while (!exitProgram) {
-        std::cout << "Enter your command: ";
-        std::string userInput;
-        std::getline(std::cin, userInput);
-
-        // Use std::istringstream to split the input based on spaces
-        std::istringstream iss(userInput);
-        std::vector<std::string> substrings;
-        std::string token;
-
-        while (iss >> token) {
-            substrings.push_back(token);
-        }
-
-        int args=substrings.size();
-        // Output the number of substrings
-        // std::cout << "Number of substrings: " << substrings.size() << std::endl;
-
-        if (!substrings.empty()) {
-            std::string comm= substrings.at(0);
-                // Compare argv[1] to a string
-                if (substrings.at(0) == "moveFile") {
-                  if(args<3){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else {
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.moveFile(substrings.at(1), substrings.at(2));
-                    //ft.printTree();
-                  }
-                } 
-              else if (substrings.at(0) == "copyFile") {
-                  if(args<4){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else{
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.copyFile(substrings.at(1), substrings.at(2), substrings.at(3));
-                  }
-              } else if (substrings.at(0) == "createFolder") {
-                  if(args<3){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else{
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.createFolder(substrings.at(1), substrings.at(2));
-                  }
-              } else if (substrings.at(0) == "deleteFile") {
-                  if(args<2){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else{
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.deleteFile(substrings.at(1));
-                  }
-              } else if (substrings.at(0) == "storeFile") {
-                  if(args<3){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else{
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.storeFile(substrings.at(1), substrings.at(2));
-                  }
-              } else if (substrings.at(0) == "getFile") {
-                  if(args<2){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else{
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.getFile(substrings.at(1));
-                  }
-              } else if (substrings.at(0) == "printTree") {
-                  if(args<0){
-                    std::cout << "Not enough arguments" << std::endl;
-                  } else{
-                    std::cout << substrings.at(0) << std::endl;
-                    ft.printTree();
-                  };
-              } else if (substrings.at(0) == "quit") {
-                  exitProgram = false;
-                  break;
-              } else {
-                  std::cout << "Enter a valid command." << std::endl;
-              }
-          } else {
-              std::cout << "Enter a valid command" << std::endl;
-          }
-
-          // for (const auto& substring : substrings) {
-          //     std::cout << "Substring: " << substring << std::endl;
-          // }
-
-        }
-    */
-
-    return 0;
+  return 0;
 }

@@ -1,0 +1,16 @@
+createFolder Folder1 RootFolder
+createFolder Folder2 Folder1
+storeFile sample.txt Folder1
+storeFile sample2.txt Folder2
+printTree
+getFile sample2.txt
+createFolder Folder3 Folder2
+moveFile sample2.txt Folder3
+deleteFile sample2.txt
+printTree
+createFolder Folder4 Folder2
+storeFile sample3.txt Folder3
+getFile sample3.txt
+printTree
+quit
+
