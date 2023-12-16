@@ -439,23 +439,6 @@ int main() {
     TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
     ft.setRoot(root);
 
-    // Adding files/folders to the root
-    TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
-    root->addChild(file1);
-
-    TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
-    root->addChild(folder1);
-
-    TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
-    root->addChild(folder2);
-
-    // Adding a file to folder1
-    TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
-    folder1->addChild(file2);
-
-    TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
-    folder2->addChild(folder3);
-
     // Print the tree
     ft.printTree();
 
@@ -540,73 +523,8 @@ int main() {
           } else {
               std::cout << "Enter a valid command" << std::endl;
           }
-
-          // for (const auto& substring : substrings) {
-          //     std::cout << "Substring: " << substring << std::endl;
-          // }
-
         }
 
 
     return 0;
   }
-
-
-
-// int main() {
-//   // Example usage
-//   FileTree myTree;
-
-//   // Creating the root node (typically a folder)
-//   TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
-//   myTree.setRoot(root);
-
-//   // Adding files/folders to the root
-//   TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
-//   root->addChild(file1);
-
-//   TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
-//   root->addChild(folder1);
-
-//   TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
-//   root->addChild(folder2);
-
-//   // Adding a file to folder1
-//   TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
-//   folder1->addChild(file2);
-
-//   TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
-//   folder2->addChild(folder3);
-
-//   // Print the tree
-//   myTree.printTree();
-
-//   //long unsigned int test;
-
-//   //  test = divide_chunks("test.txt",*file1);
-
-//   // myTree.moveFile("File1.txt","Folder3");
-//   // myTree.copyFile("File1.txt", "File4.txt", "Folder1");
-//   myTree.createFolder("Folder4", "Folder3");
-//   myTree.storeFile("sample.txt", "Folder4");
-//   myTree.storeFile("sample3.txt", "Folder4");
-//   myTree.storeFile("sample2.txt", "Folder3");
-//   myTree.printTree();
-//   //myTree.getFile("sample.txt");
-//   myTree.getFile("sample2.txt");
-  
-//   // myTree.createFolder("Folder4", "Folder3");
-//   // myTree.storeFile("file3.txt", "Folder4");
-//   // myTree.removeFile("Folder3");
-//   // myTree.deleteFile("sample.txt");
-//   myTree.getFile("sample3.txt");
-//   std::cout<<"1" <<endl;
-//   myTree.getFile("sample.txt");
-//   std::cout<<"2" <<endl;
-//   // myTree.updateFile("sample3.txt");
-//   std::cout<<"3" <<endl;
-//   myTree.getFile("sample3.txt");
-//   std::cout<<"4" <<endl;
-//   myTree.printTree();
-//   return 0;
-// }
