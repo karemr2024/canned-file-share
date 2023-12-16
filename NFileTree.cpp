@@ -571,5 +571,100 @@ FileTree readTreeFile(std::string fileName){
 
 
 int main() {
-  return 0;
-}
+    bool exitProgram = false;
+
+    FileTree ft;
+
+    // Creating the root node (typically a folder)
+    TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
+    ft.setRoot(root);
+
+    // Print the tree
+    ft.printTree();
+
+    while (!exitProgram) {
+        std::cout << "Enter your command: \n";
+        std::string userInput;
+        std::getline(std::cin, userInput);
+
+        // Use std::istringstream to split the input based on spaces
+        std::istringstream iss(userInput);
+        std::vector<std::string> substrings;
+        std::string token;
+
+        while (iss >> token) {
+            substrings.push_back(token);
+        }
+
+        int args=substrings.size();
+        // Output the number of substrings
+        // std::cout << "Number of substrings: " << substrings.size() << std::endl;
+
+        if (!substrings.empty()) {
+            std::string comm= substrings.at(0);
+                // Compare argv[1] to a string
+                if (substrings.at(0) == "moveFile") {
+                  if(args<3){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else {
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.moveFile(substrings.at(1), substrings.at(2));
+                    //ft.printTree();
+                  }
+                } 
+              else if (substrings.at(0) == "copyFile") {
+                  if(args<4){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.copyFile(substrings.at(1), substrings.at(2), substrings.at(3));
+                  }
+              } else if (substrings.at(0) == "createFolder") {
+                  if(args<3){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.createFolder(substrings.at(1), substrings.at(2));
+                  }
+              } else if (substrings.at(0) == "deleteFile") {
+                  if(args<2){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.deleteFile(substrings.at(1));
+                  }
+              } else if (substrings.at(0) == "storeFile") {
+                  if(args<3){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.storeFile(substrings.at(1), substrings.at(2));
+                  }
+              } else if (substrings.at(0) == "getFile") {
+                  if(args<2){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.getFile(substrings.at(1));
+                  }
+              } else if (substrings.at(0) == "printTree") {
+                  if(args<0){
+                    std::cout << "Not enough arguments" << std::endl;
+                  } else{
+                    std::cout << substrings.at(0) << std::endl;
+                    ft.printTree();
+                  };
+              } else if (substrings.at(0) == "quit") {
+                  exitProgram = false;
+                  break;
+              } else {
+                  std::cout << "Enter a valid command." << std::endl;
+              }
+          } else {
+              std::cout << "Enter a valid command" << std::endl;
+          }
+        }
+
+
+    return 0;
+  }
