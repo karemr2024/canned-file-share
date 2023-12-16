@@ -34,6 +34,29 @@ public:
     timestampCreated = std::time(nullptr); // Set the current time as timestamp
   }
 
+  //Constructor for reading tree from .data (use for fileType other than folders)
+  TreeNode(std::string name, time_t time, size_t size, std::string type,
+	   TreeNode* parentNode, long unsigned int inds, int numberChunks){
+    this->fileName = name;
+    this->timestampCreated = time;
+    this->fileSize = size;
+    this->fileType = type;
+    this->parent = parentNode;
+    this->chunk_inds = inds;
+    this->numChunks = numberChunks;
+  }
+
+  //Constructor for reading ree from .data (used for fileType:"folder")
+  TreeNode(std::string name, time_t time, size_t size, std::string type,
+	   TreeNode* parentNode, int numberChunks){
+    this->fileName = name;
+    this->timestampCreated = time;
+    this->fileSize = size;
+    this->fileType = type;
+    this->parent = parentNode;
+    this->numChunks = numberChunks;
+  }
+  
   //Folder Constructor
   TreeNode(std::string name, std::string type,
 	   TreeNode* parentNode)
@@ -62,6 +85,23 @@ public:
       }
     }
     return false;
+  }
+
+  void serializeNode(std::ofstream& file){
+    file << this->fileName << '\n';
+    file << this->timestampCreated << '\n';
+    file << this->fileSize << '\n';
+    file << this->fileType << '\n';
+
+    if(this->parent == nullptr){
+      file << '\n';
+    }
+    else{
+      file << this->parent->fileName << '\n';
+    }
+
+    file << this->chunk_inds << '\n';
+    file << this->numChunks << '\n';
   }
 
 };
@@ -293,7 +333,37 @@ public:
 
     //free
     delete currentFile;
-    
+    return true;
+  }
+
+  //Writes each file node's data to a file (whose name is provided in argument .data)
+  void writeTreeFile(std::string treeName){
+    std::string fileName = treeName + ".data";
+    std::ofstream outFile(fileName);
+    if(!outFile.is_open()){
+      std::cout<<"Unable to open file" << std::endl;
+      return;
+    }
+
+    //Don't need to store the root node
+    for(int i=0;i<this->root->children.size();i++){
+      this->writeTreeHelper(outFile,this->root->children[i]);
+    }
+
+    outFile.close();
+
+  }
+
+  void writeTreeHelper(std::ofstream& file,TreeNode* currentNode){
+    if(currentNode == nullptr){
+      return;
+    }
+
+    currentNode->serializeNode(file);
+
+    for(int i=0;i<currentNode->children.size();i++){
+      this->writeTreeHelper(file,currentNode->children[i]);
+    }
   }
   
   // TODO: Implement the following functions
@@ -303,6 +373,71 @@ public:
    */
 };
 
+FileTree readTreeFile(std::string fileName){
+  
+  FileTree ft;
+  TreeNode* root = new TreeNode("RootFolder",0,"folder",nullptr);
+  ft.setRoot(root);
+  
+  std::ifstream file(fileName);
+  if(!file.is_open()){
+    std::cout<<"Unable to open file" << std::endl;
+    return ft;
+  }
+
+  int lineCounter = 0;
+  std::string name;
+  std::time_t time;
+  size_t size;
+  std::string type;
+  std::string parentName;
+  long unsigned int inds;
+  int numberChunks;
+
+  std::string line;
+  while (std::getline(file,line)){
+    
+    switch(lineCounter%7)
+      {
+      case 0: //name
+	name = line;
+      case 1: //time
+	std::cout<<"Hi\n";
+	time = (time_t)stoll(line);
+	std::cout<<"Bye\n";
+      case 2: //size
+	size = std::stoul(line);
+      case 3: //type
+	type = line;
+      case 4: //parentName
+	parentName = line;
+      case 5: //inds, folders have no chunk indicies
+	if(type != "folder"){
+	  inds = stoul(line);
+	}
+      case 6: //numberChunks, once we read 7 lines, we create a node
+	numberChunks = stoi(line);
+
+	//Create a node
+	TreeNode* parentNode = ft.searchByName(parentName);
+	if(type != "folder"){
+	  TreeNode* currentNode = new TreeNode(name,time,size,type,parentNode,inds,numberChunks);
+	  parentNode->addChild(currentNode);
+	}
+	else{
+	  TreeNode* currentNode = new TreeNode(name,time,size,type,parentNode,numberChunks);
+	  parentNode->addChild(currentNode);
+	}
+      }
+    
+    //std::cout << "|" <<line << "|" << '\n';
+    lineCounter++;
+  }
+
+  file.close();
+
+  return ft;
+}
 
 int main() {
     bool exitProgram = false;
@@ -333,6 +468,11 @@ int main() {
     // Print the tree
     ft.printTree();
 
+    ft.writeTreeFile("Test");
+
+    FileTree new_ft = readTreeFile("Test.data");
+
+    /*
     while (!exitProgram) {
         std::cout << "Enter your command: ";
         std::string userInput;
@@ -420,54 +560,7 @@ int main() {
           // }
 
         }
-
+    */
 
     return 0;
-  }
-
-
-
-// int main() {
-//   // Example usage
-//   FileTree myTree;
-
-//   // Creating the root node (typically a folder)
-//   TreeNode *root = new TreeNode("RootFolder", 0, "folder", nullptr);
-//   myTree.setRoot(root);
-
-//   // Adding files/folders to the root
-//   TreeNode *file1 = new TreeNode("File1.txt", 1024, "txt", root);
-//   root->addChild(file1);
-
-//   TreeNode *folder1 = new TreeNode("Folder1", 0, "folder", root);
-//   root->addChild(folder1);
-
-//   TreeNode *folder2 = new TreeNode("Folder2", 0, "folder", root);
-//   root->addChild(folder2);
-
-//   // Adding a file to folder1
-//   TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
-//   folder1->addChild(file2);
-
-//   TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
-//   folder2->addChild(folder3);
-
-//   // Print the tree
-//   myTree.printTree();
-
-//   //long unsigned int test;
-
-//   //  test = divide_chunks("test.txt",*file1);
-
-//   myTree.moveFile("File1.txt","Folder3");
-//   myTree.copyFile("File1.txt", "File4.txt", "Folder1");
-//   myTree.createFolder("Folder4", "Folder3");
-//   myTree.storeFile("file3.txt", "Folder4");
-//   myTree.printTree();
-//   myTree.createFolder("Folder4", "Folder3");
-//   myTree.storeFile("file3.txt", "Folder4");
-//   myTree.removeFile("Folder3");
-//   //myTree.deleteFile("Folder3");
-//   myTree.printTree();
-//   return 0;
-// }
+}
