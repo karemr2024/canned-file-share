@@ -1,5 +1,7 @@
 # canned-file-share
 
+## Getting started
+
 Compile the NfileTree.cpp file using the provided makefile by simply navigating to the directory canned-file-share and typing in your terminal:
 ```
 make
