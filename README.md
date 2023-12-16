@@ -17,7 +17,7 @@ Enter your command:
 ```
 After which you can use the provided functionalities following the format shown below. 
 
-## using canned-file-share via Command Line Interface 
+## Using canned-file-share via Command Line Interface 
 
 ### moveFile
 
