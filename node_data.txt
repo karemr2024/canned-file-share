@@ -1,8 +1,0 @@
-RootFolder
-1702661898
-0
-folder
-File1.txt,Folder1,Folder2,
-
-0
-0
