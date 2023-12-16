@@ -401,20 +401,24 @@ FileTree readTreeFile(std::string fileName){
       {
       case 0: //name
 	name = line;
+	break;
       case 1: //time
-	std::cout<<"Hi\n";
 	time = (time_t)stoll(line);
-	std::cout<<"Bye\n";
+	break;
       case 2: //size
 	size = std::stoul(line);
+	break;
       case 3: //type
 	type = line;
+	break;
       case 4: //parentName
 	parentName = line;
+	break;
       case 5: //inds, folders have no chunk indicies
 	if(type != "folder"){
 	  inds = stoul(line);
 	}
+	break;
       case 6: //numberChunks, once we read 7 lines, we create a node
 	numberChunks = stoi(line);
 
@@ -428,6 +432,7 @@ FileTree readTreeFile(std::string fileName){
 	  TreeNode* currentNode = new TreeNode(name,time,size,type,parentNode,numberChunks);
 	  parentNode->addChild(currentNode);
 	}
+	break;
       }
     
     //std::cout << "|" <<line << "|" << '\n';
@@ -462,7 +467,7 @@ int main() {
     TreeNode *file2 = new TreeNode("File2.md", 2048, "md", folder1);
     folder1->addChild(file2);
 
-    TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", root);
+    TreeNode *folder3 = new TreeNode("Folder3", 0, "folder", folder2);
     folder2->addChild(folder3);
 
     // Print the tree
@@ -470,8 +475,9 @@ int main() {
 
     ft.writeTreeFile("Test");
 
+    std::cout<<"Persistent Tree:\n";
     FileTree new_ft = readTreeFile("Test.data");
-
+    new_ft.printTree();
     /*
     while (!exitProgram) {
         std::cout << "Enter your command: ";
