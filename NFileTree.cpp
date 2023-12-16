@@ -78,11 +78,11 @@ private:
     if (currentNode == nullptr) {
       return nullptr;
     }
-    std::cout<<"Inside1" << std::endl;
+    //std::cout<<"Inside1" << std::endl;
     if (currentNode->fileName == name) {
       return currentNode;
     }
-    std::cout<<"Inside2" << std::endl;  
+    //std::cout<<"Inside2" << std::endl;  
     for (TreeNode *child : currentNode->children) {
       TreeNode *result = searchHelper(child, name);
       if (result != nullptr) {
@@ -234,7 +234,7 @@ public:
     // will contain the file extension (e.g., "txt")
     if (substrings.size() > 1) {
         fileExtension = substrings.back();
-        std::cout << "File extension: " << fileExtension << std::endl;
+        //std::cout << "File extension: " << fileExtension << std::endl;
     } else {
         fileExtension = "txt";
         std::cout << "No file extension found." << std::endl;
@@ -308,9 +308,9 @@ public:
 
 
   bool getFile(std::string filename){
-    std::cout<<"Inside" <<endl;
+    //std::cout<<"Inside" <<endl;
     TreeNode* file = this->searchByName(filename);
-    std::cout<<"Inside" <<endl;
+    //std::cout<<"Inside" <<endl;
     if(file == nullptr){
       std::cout<<"File does not exist!" <<endl;
       return false;
@@ -377,8 +377,8 @@ public:
 
     currNode->numChunks=chunkCounter;
     gchunkcount=chunkCounter+1;
-    std::cout<<"chunkCounter: " << chunkCounter << std::endl;
-    std::cout<<"gchunkcount: " << gchunkcount << std::endl;
+    //std::cout<<"chunkCounter: " << chunkCounter << std::endl;
+    //std::cout<<"gchunkcount: " << gchunkcount << std::endl;
 
     inputFile.close();
 }
@@ -460,7 +460,7 @@ int main() {
     ft.printTree();
 
     while (!exitProgram) {
-        std::cout << "Enter your command: ";
+        std::cout << "Enter your command: \n";
         std::string userInput;
         std::getline(std::cin, userInput);
 
